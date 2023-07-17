@@ -19,7 +19,7 @@ default = {
   env                       : "dev-new",                   ## 프로덕션 환경
   cidr_ipv4_block           : "10.10.0.0/16",              ## IPv4 - 생성 참고 : https://docs.aws.amazon.com/ko_kr/vpc/latest/userguide/vpc-cidr-blocks.html
   cidr_ipv6_block           : "",                          ## IPv6 - 절차 : 1. VPC 만 생성(true) 나머지 false 2. VPC IPv6 확인 후 지정 3. 나머지 생성(true)
-  vpc_id                    : "vpc-0798677832353a772",     ## 기존 VPC 활용
+  vpc_id                    : "vpc-05abcb0ba9197103a",     ## 기존 VPC 활용
 
   # 모듈 활성화 여부 선택
   # [VPC]
@@ -36,7 +36,7 @@ default = {
   module_enable_rds               : false,   # [비용 발생]
   module_enable_elasticache       : false,   # [비용 발생]
   # [EC2]
-  module_enable_instances         : false,   # [비용 발생] Subnets 필수
+  module_enable_instances         : true,   # [비용 발생] Subnets 필수
   module_enable_launch_template   : true,
   module_enable_target_group      : true,   # VPC 필수
   module_enable_load_balancer     : true,   # [비용 발생] Subnets 필수, target_group 필수(nlb 경우)
@@ -112,7 +112,35 @@ elasticache_list = []
 #########################################################
 ## 05_01. Instances
 #########################################################
-instances_list = []
+instances_list = [
+  { // bastion server 2
+    name                        : "bastion-2",                # (Required) [key]
+    description                 : "default bastion server 2",
+    ami                         : "ami-0006be3056c2e5779",    # (Required) 표준 지원 ami 검색. 참고 : https://cloud-images.ubuntu.com/locator/ec2/
+    cpu_core_count              : 1                           # (Required) ami spec 에 따라 cpu 지원이 다름.
+    threads_per_core            : 1                           # (Required) ami spec 에 따라 cpu 지원이 다름.
+    instance_type               : "t3.micro",                 # (Required) 인스턴스 유형. 참고 : https://aws.amazon.com/ko/ec2/instance-types/
+    associate_public_ip_address : false,                      # (Required) 인스턴스 자동 생성 Public IP. Public IP 필요시 associate_public_ip_address or public_ip 선택.
+    public_ip                   : true                        # (Required) EIP 생성 후 연결. Public IP 필요시 associate_public_ip_address or public_ip 선택.
+    user_data                   : "./data/user_data.sh",      # 인스턴스 시작 된 후 실행 될 Script
+    iam_instance_profile        : "",                         # VPC 내부 리소스 접근을 위한 Role 지정
+    security_group_ids          : ["sg-06de51abb01a75373"],            # (Required) SG ID 명시적 지정. security_group_ids or security_group_name 필수 하나만 지정.
+    security_group_name         : [],                         # (Required) SG [Key] 지정. security_group_ids or security_group_name 필수 하나만 지정.
+    subnet_ids                  : "subnet-0815f3ae9dfdcaa41", # (Required) Subnet ID 명시적 지정. subnet_ids or subnet_name 필수 하나만 지정.
+    subnet_name                 : "",                         # (Required) Subnet [Key] 지정. subnet_ids or subnet_name 필수 하나만 지정.
+    subnet_az                   : "a"                         # (Required) 가용 영역. a, b, c, d, e, f
+    root_block_device           : [                           # EBS, snapshot_id 지정 불가
+      { name : "root" ,device_name : "/dev/sda1"  ,volume_size : 30   }
+    ],
+    ebs_block_device            : [                           # EBS, snapshot_id 공백일 경우 자동 생성.
+      { name : "home" ,snapshot_id : "" ,device_name : "/dev/sdb" ,volume_size : 30   }
+    ],
+    tags  : {                                                 # 리소스 태그 정책
+      TYPE_1 : "COMMON",
+      TYPE_2 : "INSTANCE"
+    }
+  }
+]
 
 #########################################################
 ## 05_02. Launch templates
@@ -121,13 +149,13 @@ launch_template_list = [
   {
     name                    : "svc-2",                            # (Required) [key]
     description             : "service was auto-scale template",
-    image_id                : "ami-09dcf4c1f5e1bf174",            # (Required) 표준 지원 ami 검색 > https://cloud-images.ubuntu.com/locator/ec2/
+    image_id                : "ami-0006be3056c2e5779",            # (Required) 표준 지원 ami 검색 > https://cloud-images.ubuntu.com/locator/ec2/
     cpu_core_count          : 1                                   # (Required) ami spec 에 따라 cpu 지원이 다름.
     threads_per_core        : 1                                   # (Required) ami spec 에 따라 cpu 지원이 다름.
     instance_type           : "t3.micro",                         # (Required) 인스턴스 유형. 참고 : https://aws.amazon.com/ko/ec2/instance-types/
     user_data               : "./data/user_data.sh",              # 인스턴스 시작 된 후 실행 될 Script
     iam_instance_profile    : "",                                 # VPC 내부 리소스 접근을 위한 Role 지정
-    security_group_ids      : ["sg-0afcfcaab6779ace5"],                                 # (Required) SG ID 명시적 지정. security_group_ids or security_group_name 필수 하나만 지정.
+    security_group_ids      : ["sg-0fa2527fb4f39a974"],                                 # (Required) SG ID 명시적 지정. security_group_ids or security_group_name 필수 하나만 지정.
     security_group_name     : [],                                 # (Required) SG [Key] 지정. security_group_ids or security_group_name 필수 하나만 지정.
     block_device_mappings   : [                                   # (Required) EBS
     ],
@@ -143,7 +171,7 @@ launch_template_list = [
 #########################################################
 target_group_list = [
   {
-    name : "svc-2-ec2",                     # (Required) [key]
+    name : "svc-2-ec2",                   # (Required) [key]
     target_type : "instance",             # (Required) instance or alb
     port : "8080",                        # (Required) PORT
     protocol  : "HTTP",                   # (Required) HTTP or TCP
@@ -175,7 +203,7 @@ load_balancer_list = [
     load_balancer_type      : "network",          # (Required) network or application 지정.
     security_group_ids      : [],                 # SG ID 명시적 지정. security_group_ids or security_group_name
     security_group_name     : [],                 # SG [Key] 지정. security_group_ids or security_group_name
-    subnet_ids              : ["subnet-0a627b303c2a6cb6a","subnet-0cd885159eb399ba2"],                 # (Required) Subnet ID 명시적 지정. subnet_ids or subnet_name
+    subnet_ids              : ["subnet-0815f3ae9dfdcaa41","subnet-08def832c4444acc2"],                 # (Required) Subnet ID 명시적 지정. subnet_ids or subnet_name
     subnet_name             : [],                 # (Required) Subnet [Key] 지정. subnet_ids or subnet_name
     ip_address_type         : "ipv4",             # (Required) "ipv4" or "dualstack"(Subnet IPv6 지원시 가능)
     target_group            : "svc-2-alb",        # (Required) Target Group Key(name) 지정.
@@ -189,9 +217,9 @@ load_balancer_list = [
   {
     name                    : "alb-svc-2",        # (Required) [key]
     load_balancer_type      : "application",      # (Required) network or application 지정.
-    security_group_ids      : ["sg-0a4bfd5c539ec3a5e"],                 # SG ID 명시적 지정. security_group_ids or security_group_name
+    security_group_ids      : ["sg-085a820f94a446f79"],                 # SG ID 명시적 지정. security_group_ids or security_group_name
     security_group_name     : [],                 # SG [Key] 지정. security_group_ids or security_group_name
-    subnet_ids              : ["subnet-0d10b96ff4b12c95d","subnet-03930f37f5dabdc38"],                 # (Required) Subnet ID 명시적 지정. subnet_ids or subnet_name
+    subnet_ids              : ["subnet-09c59d82ce9d0af23","subnet-00326c4bb54cc294c"],                 # (Required) Subnet ID 명시적 지정. subnet_ids or subnet_name
     subnet_name             : [],                 # (Required) Subnet [Key] 지정. subnet_ids or subnet_name
     ip_address_type         : "ipv4",             # (Required) "ipv4" or "dualstack"(Subnet IPv6 지원시 가능)
     target_group            : "svc-2-ec2",        # (Required) Target Group Key(name) 지정.
@@ -213,9 +241,13 @@ asg_list = [
     desired_capacity        : 2,              # (Required) 인스턴스 개수.
     max_size                : 2,              # (Required) 최대 수 지정. 자동 Scale out 시 필요.
     min_size                : 1,              # (Required) 최소 수 지정. 자동 Scale out 시 필요.
-    subnet_ids              : ["subnet-0d10b96ff4b12c95d","subnet-03930f37f5dabdc38"],                 # (Required) Subnet ID 명시적 지정. subnet_ids or subnet_name
+    subnet_ids              : ["subnet-09c59d82ce9d0af23","subnet-00326c4bb54cc294c"],                 # (Required) Subnet ID 명시적 지정. subnet_ids or subnet_name
     subnet_name             : "",             # (Required) Subnet [Key] 지정. subnet_ids or subnet_name
     target_group            : "svc-2-ec2",    # (Required) Target Group Key(name) 지정.
-    launch_template         : "svc-2"         # (Required) Launch Template Key(name) 지정.
+    launch_template         : "svc-2",        # (Required) Launch Template Key(name) 지정.
+    tags                    : [
+      { key   : "TYPE_1", value : "COMMON", propagate_at_launch : false },
+      { key   : "TYPE_2", value : "ASG", propagate_at_launch : false }
+    ]
   }
 ]

@@ -22,6 +22,20 @@ resource "aws_autoscaling_group" "autoscaling_group_template" {
     id      = each.value["launch_template"] == "" ? "" : element([for e in local.launch_template_ids : e["id"] if replace(e["tags"]["Name"],format("%s-lt-",local.tag_name),"") == each.value["launch_template"]], 0)
     version = "$Latest"
   }
+  tag {
+    key   = "Name"
+    value = format("%s-instance-%s",local.tag_name, each.value["name"])
+    propagate_at_launch = false
+  }
+  dynamic "tag" {
+    for_each  = { for e in each.value["tags"] : e["key"] => e }
+
+    content {
+      key                 = tag.value["key"]
+      value               = tag.value["value"]
+      propagate_at_launch = tag.value["propagate_at_launch"]
+    }
+  }
 }
 
 #resource "aws_autoscaling_attachment" "autoscaling_attachment_template" {

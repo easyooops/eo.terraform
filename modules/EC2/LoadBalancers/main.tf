@@ -28,6 +28,7 @@ resource "aws_lb" "nlb_template" {
 
   name                        = format("%s-elb-%s",local.tag_name, each.value["name"])
   load_balancer_type          = each.value["load_balancer_type"]
+  internal                    = false
   enable_deletion_protection  = false
 
   dynamic "subnet_mapping" {
@@ -60,6 +61,7 @@ resource "aws_lb" "alb_template" {
 
   name                        = format("%s-elb-%s",local.tag_name, each.value["name"])
   load_balancer_type          = each.value["load_balancer_type"]
+  internal                    = true
   enable_deletion_protection  = false
   security_groups             = each.value["security_group_ids"] == [] ? [for ids in local.security_group_ids : ids["id"] if contains(each.value["security_group_name"], ids["name"])] : each.value["security_group_ids"]
 #  subnets                     = each.value["subnet_ids"] == [] ? each.value["subnet_name"] == [] ? [] : [for ids in local.subnet_ids : ids["id"] if contains(ids["name"], each.value["subnet_name"])] : each.value["subnet_ids"]

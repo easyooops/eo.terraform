@@ -1,15 +1,20 @@
 ## Terraform Guide (Windows+Intellij version)
 
-### 1. Terraform Install
+### 1. Terraform Developer Guide
+★ 모듈 개발(테라폼 코드)시, 참조 가이드 페이지. 
+https://registry.terraform.io/providers/hashicorp/aws/latest/docs
+
+### 2. Terraform Install
 1. **Download** : https://developer.hashicorp.com/terraform/downloads
-2. Project 생성 및 경로 생성.
+2. Project 생성 및 경로 생성. 
 3. 압축 해제 후 "terraform.exe" 테라폼 실행 루트 경로 이동.
 4. Terraform 실행 확인. (Windows PS 하위 경로 실행시 "./" 붙여서 실행 필요.)
+5. 타 OS 및 IDEA 사용자는 각자 인터넷을 참고!! 
  ```powershell
 $ ./terraform
 ```
 
-### 2. Workspace (Production)
+### 3. Workspace (Production)
 ```powershell
 # workspace help
     ./terraform workspace -h
@@ -27,7 +32,7 @@ $ ./terraform
     ./terraform workspace delete example_all_dev
 ```
 
-### 3. Terraform Run
+### 4. Terraform Run
 - [주의] Terraform import 참조 코드 가져올 경우에만 조심해서 사용. "*.tfstate" 파일 기준 인프라 자동 변경/삭제가 발생 됨.
 ```powershell
 # 1) 모듈 설치
@@ -43,7 +48,7 @@ $ ./terraform
     ./terraform destroy -var-file="example_all_dev.tfvars"
 ```
 
-### 4. Terraform Package Structure
+### 5. Terraform Package Structure 
 ```powershell
 [root]
 ├───.terraform
@@ -78,5 +83,5 @@ $ ./terraform
 
 ```
 
-### 5. Help / Question
+### 6. Help / Question
 - ssu0416@gmail.com

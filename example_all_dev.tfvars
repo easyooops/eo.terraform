@@ -590,6 +590,10 @@ asg_list = [
     subnet_ids              : [],                 # (Required) Subnet ID 명시적 지정. subnet_ids or subnet_name
     subnet_name             : "svc",              # (Required) Subnet [Key] 지정. subnet_ids or subnet_name
     target_group            : "svc-ec2",          # (Required) Target Group Key(name) 지정.
-    launch_template         : "svc"               # (Required) Launch Template Key(name) 지정.
+    launch_template         : "svc",              # (Required) Launch Template Key(name) 지정.
+    tags                    : [
+      { key   : "TYPE_1", value : "COMMON", propagate_at_launch : false },
+      { key   : "TYPE_2", value : "ASG", propagate_at_launch : false }
+    ]
   }
 ]
