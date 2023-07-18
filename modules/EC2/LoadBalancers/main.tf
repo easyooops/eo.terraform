@@ -162,6 +162,12 @@ resource "aws_lb_listener" "alb_listener_80_template" {
     type             = "forward"
     target_group_arn = element([for e in local.lb_target_group_ids : e["arn"] if e["tags"]["Name"] == format("%s-tg-%s",local.tag_name, each.value["target_group"])], 0)
   }
+
+  lifecycle {
+    ignore_changes = [
+      default_action
+    ]
+  }
 }
 ### 05_01_06. ALB Target Group Attachment
 resource "aws_lb_target_group_attachment" "lb_target_group_attachment_template" {
@@ -170,7 +176,11 @@ resource "aws_lb_target_group_attachment" "lb_target_group_attachment_template" 
 
   target_group_arn  = element([for e in local.lb_target_group_ids : e["arn"] if e["tags"]["Name"] == format("%s-tg-%s",local.tag_name, each.value["target_group"])], 0)
   target_id         = element([for e in aws_lb.alb_template : e["arn"] if e["tags"]["Name"] == format("%s-elb-%s",local.tag_name, each.value["alb_target_group"])], 0)
-  port              = e["certificate_arn"] == "" ? 80 : 443
+  port              = each.value["certificate_arn"] == "" ? 80 : 443
+
+  lifecycle {
+    create_before_destroy = true
+  }
 
   depends_on = [aws_lb_listener.alb_listener_80_template,aws_lb_listener.alb_listener_443_template]
 }
