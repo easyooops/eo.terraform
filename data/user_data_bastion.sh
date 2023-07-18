@@ -18,6 +18,8 @@ Content-Transfer-Encoding: 7bit
 Content-Disposition: attachment; filename="userdata.txt"
 
 #!/bin/bash
-#start tomacat
+# Update SSH configuration to listen on port 70
+sudo sed -i 's/^#Port 22/Port 70/' /etc/ssh/sshd_config
+sudo service ssh restart
 
 --//--

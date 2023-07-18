@@ -116,13 +116,13 @@ instances_list = [
   { // bastion server 2
     name                        : "bastion-2",                # (Required) [key]
     description                 : "default bastion server 2",
-    ami                         : "ami-0006be3056c2e5779",    # (Required) 표준 지원 ami 검색. 참고 : https://cloud-images.ubuntu.com/locator/ec2/
+    ami                         : "ami-02609ea4f7524ebb6",    # (Required) 표준 지원 ami 검색. 참고 : https://cloud-images.ubuntu.com/locator/ec2/
     cpu_core_count              : 1                           # (Required) ami spec 에 따라 cpu 지원이 다름.
     threads_per_core            : 1                           # (Required) ami spec 에 따라 cpu 지원이 다름.
     instance_type               : "t3.micro",                 # (Required) 인스턴스 유형. 참고 : https://aws.amazon.com/ko/ec2/instance-types/
     associate_public_ip_address : false,                      # (Required) 인스턴스 자동 생성 Public IP. Public IP 필요시 associate_public_ip_address or public_ip 선택.
     public_ip                   : true                        # (Required) EIP 생성 후 연결. Public IP 필요시 associate_public_ip_address or public_ip 선택.
-    user_data                   : "./data/user_data.sh",      # 인스턴스 시작 된 후 실행 될 Script
+    user_data                   : "./data/user_data_bastion.sh",      # 인스턴스 시작 된 후 실행 될 Script
     iam_instance_profile        : "",                         # VPC 내부 리소스 접근을 위한 Role 지정
     security_group_ids          : ["sg-06de51abb01a75373"],            # (Required) SG ID 명시적 지정. security_group_ids or security_group_name 필수 하나만 지정.
     security_group_name         : [],                         # (Required) SG [Key] 지정. security_group_ids or security_group_name 필수 하나만 지정.
@@ -149,15 +149,19 @@ launch_template_list = [
   {
     name                    : "svc-2",                            # (Required) [key]
     description             : "service was auto-scale template",
-    image_id                : "ami-0006be3056c2e5779",            # (Required) 표준 지원 ami 검색 > https://cloud-images.ubuntu.com/locator/ec2/
+    image_id                : "ami-02609ea4f7524ebb6",            # (Required) 표준 지원 ami 검색 > https://cloud-images.ubuntu.com/locator/ec2/
     cpu_core_count          : 1                                   # (Required) ami spec 에 따라 cpu 지원이 다름.
     threads_per_core        : 1                                   # (Required) ami spec 에 따라 cpu 지원이 다름.
     instance_type           : "t3.micro",                         # (Required) 인스턴스 유형. 참고 : https://aws.amazon.com/ko/ec2/instance-types/
-    user_data               : "./data/user_data.sh",              # 인스턴스 시작 된 후 실행 될 Script
+    user_data               : "./data/user_data_tomcat.sh",              # 인스턴스 시작 된 후 실행 될 Script
     iam_instance_profile    : "",                                 # VPC 내부 리소스 접근을 위한 Role 지정
     security_group_ids      : ["sg-0fa2527fb4f39a974"],                                 # (Required) SG ID 명시적 지정. security_group_ids or security_group_name 필수 하나만 지정.
     security_group_name     : [],                                 # (Required) SG [Key] 지정. security_group_ids or security_group_name 필수 하나만 지정.
     block_device_mappings   : [                                   # (Required) EBS
+      { name : "root"   ,snapshot_id : "" ,device_name : "/dev/sda1"    ,volume_size : 30   },
+      { name : "home"   ,snapshot_id : "" ,device_name : "/dev/sdb"     ,volume_size : 30   },
+      { name : "home01" ,snapshot_id : "" ,device_name : "/dev/sdc"     ,volume_size : 50   },
+      { name : "home02" ,snapshot_id : "" ,device_name : "/dev/sdd"     ,volume_size : 200  }
     ],
     tags  : {                                                     # 리소스 태그 정책
       TYPE_1 : "COMMON",
