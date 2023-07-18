@@ -28,7 +28,7 @@ resource "aws_lb" "nlb_template" {
 
   name                        = format("%s-elb-%s",local.tag_name, each.value["name"])
   load_balancer_type          = each.value["load_balancer_type"]
-  internal                    = false
+  internal                    = each.value["internal"]
   enable_deletion_protection  = false
 
   dynamic "subnet_mapping" {
@@ -61,7 +61,7 @@ resource "aws_lb" "alb_template" {
 
   name                        = format("%s-elb-%s",local.tag_name, each.value["name"])
   load_balancer_type          = each.value["load_balancer_type"]
-  internal                    = true
+  internal                    = each.value["internal"]
   enable_deletion_protection  = false
   security_groups             = each.value["security_group_ids"] == [] ? [for ids in local.security_group_ids : ids["id"] if contains(each.value["security_group_name"], ids["name"])] : each.value["security_group_ids"]
 #  subnets                     = each.value["subnet_ids"] == [] ? each.value["subnet_name"] == [] ? [] : [for ids in local.subnet_ids : ids["id"] if contains(ids["name"], each.value["subnet_name"])] : each.value["subnet_ids"]
@@ -80,7 +80,7 @@ resource "aws_lb" "alb_template" {
 ### 05_01_04. Network Load Balancer Listeners
 resource "aws_lb_listener" "nlb_listener_443_template" {
 
-  for_each  = { for e in local.load_balancer_list : e["name"] => e if e["load_balancer_type"] == "network" }
+  for_each  = { for e in local.load_balancer_list : e["name"] => e if e["load_balancer_type"] == "network" && e["certificate_arn"] != "" }
 
   tags      = merge(
                     { Name : format("%s-lisener-%s",local.tag_name, each.value["name"])  },
@@ -101,7 +101,7 @@ resource "aws_lb_listener" "nlb_listener_443_template" {
 }
 resource "aws_lb_listener" "nlb_listener_80_template" {
 
-  for_each  = { for e in local.load_balancer_list : e["name"] => e if e["load_balancer_type"] == "network" }
+  for_each  = { for e in local.load_balancer_list : e["name"] => e if e["load_balancer_type"] == "network" && e["certificate_arn"] == "" }
 
   tags      = merge(
                     { Name : format("%s-lisener-%s",local.tag_name, each.value["name"])  },
@@ -144,7 +144,7 @@ resource "aws_lb_listener" "alb_listener_443_template" {
 }
 resource "aws_lb_listener" "alb_listener_80_template" {
 
-  for_each  = { for e in local.load_balancer_list : e["name"] => e if e["load_balancer_type"] == "application" }
+  for_each  = { for e in local.load_balancer_list : e["name"] => e if e["load_balancer_type"] == "application" && e["certificate_arn"] == "" }
 
   tags      = merge(
                     { Name : format("%s-lisener-%s",local.tag_name, each.value["name"])  },
@@ -170,9 +170,9 @@ resource "aws_lb_target_group_attachment" "lb_target_group_attachment_template" 
 
   target_group_arn  = element([for e in local.lb_target_group_ids : e["arn"] if e["tags"]["Name"] == format("%s-tg-%s",local.tag_name, each.value["target_group"])], 0)
   target_id         = element([for e in aws_lb.alb_template : e["arn"] if e["tags"]["Name"] == format("%s-elb-%s",local.tag_name, each.value["alb_target_group"])], 0)
-  port              = 80
+  port              = e["certificate_arn"] == "" ? 80 : 443
 
-  depends_on = [aws_lb_listener.alb_listener_80_template]
+  depends_on = [aws_lb_listener.alb_listener_80_template,aws_lb_listener.alb_listener_443_template]
 }
 
 #### variable ####

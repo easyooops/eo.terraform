@@ -547,6 +547,7 @@ load_balancer_list = [
   {
     name                    : "nlb-svc",          # (Required) [key]
     load_balancer_type      : "network",          # (Required) network or application 지정.
+    internal                : false,              # (Required) internal or Internet-facing
     security_group_ids      : [],                 # SG ID 명시적 지정. security_group_ids or security_group_name
     security_group_name     : [],                 # SG [Key] 지정. security_group_ids or security_group_name
     subnet_ids              : [],                 # (Required) Subnet ID 명시적 지정. subnet_ids or subnet_name
@@ -563,6 +564,7 @@ load_balancer_list = [
   {
     name                    : "alb-svc",          # (Required) [key]
     load_balancer_type      : "application",      # (Required) network or application 지정.
+    internal                : true,               # (Required) internal or Internet-facing
     security_group_ids      : [],                 # SG ID 명시적 지정. security_group_ids or security_group_name
     security_group_name     : ["elb-svc"],        # SG [Key] 지정. security_group_ids or security_group_name
     subnet_ids              : [],                 # (Required) Subnet ID 명시적 지정. subnet_ids or subnet_name

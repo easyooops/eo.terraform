@@ -19,7 +19,7 @@ default = {
   env                       : "dev-new",                   ## 프로덕션 환경
   cidr_ipv4_block           : "10.10.0.0/16",              ## IPv4 - 생성 참고 : https://docs.aws.amazon.com/ko_kr/vpc/latest/userguide/vpc-cidr-blocks.html
   cidr_ipv6_block           : "",                          ## IPv6 - 절차 : 1. VPC 만 생성(true) 나머지 false 2. VPC IPv6 확인 후 지정 3. 나머지 생성(true)
-  vpc_id                    : "vpc-05abcb0ba9197103a",     ## 기존 VPC 활용
+  vpc_id                    : "vpc-02a7024ead8923a61",     ## 기존 VPC 활용
 
   # 모듈 활성화 여부 선택
   # [VPC]
@@ -124,9 +124,9 @@ instances_list = [
     public_ip                   : true                        # (Required) EIP 생성 후 연결. Public IP 필요시 associate_public_ip_address or public_ip 선택.
     user_data                   : "./data/user_data_bastion.sh",      # 인스턴스 시작 된 후 실행 될 Script
     iam_instance_profile        : "",                         # VPC 내부 리소스 접근을 위한 Role 지정
-    security_group_ids          : ["sg-06de51abb01a75373"],            # (Required) SG ID 명시적 지정. security_group_ids or security_group_name 필수 하나만 지정.
+    security_group_ids          : ["sg-04e76f5405252a3c0"],            # (Required) SG ID 명시적 지정. security_group_ids or security_group_name 필수 하나만 지정.
     security_group_name         : [],                         # (Required) SG [Key] 지정. security_group_ids or security_group_name 필수 하나만 지정.
-    subnet_ids                  : "subnet-0815f3ae9dfdcaa41", # (Required) Subnet ID 명시적 지정. subnet_ids or subnet_name 필수 하나만 지정.
+    subnet_ids                  : "subnet-0ceaf15f5e05ff4a2", # (Required) Subnet ID 명시적 지정. subnet_ids or subnet_name 필수 하나만 지정.
     subnet_name                 : "",                         # (Required) Subnet [Key] 지정. subnet_ids or subnet_name 필수 하나만 지정.
     subnet_az                   : "a"                         # (Required) 가용 영역. a, b, c, d, e, f
     root_block_device           : [                           # EBS, snapshot_id 지정 불가
@@ -155,7 +155,7 @@ launch_template_list = [
     instance_type           : "t3.micro",                         # (Required) 인스턴스 유형. 참고 : https://aws.amazon.com/ko/ec2/instance-types/
     user_data               : "./data/user_data_tomcat.sh",              # 인스턴스 시작 된 후 실행 될 Script
     iam_instance_profile    : "",                                 # VPC 내부 리소스 접근을 위한 Role 지정
-    security_group_ids      : ["sg-0fa2527fb4f39a974"],                                 # (Required) SG ID 명시적 지정. security_group_ids or security_group_name 필수 하나만 지정.
+    security_group_ids      : ["sg-04bf00bf5e86a8573"],                                 # (Required) SG ID 명시적 지정. security_group_ids or security_group_name 필수 하나만 지정.
     security_group_name     : [],                                 # (Required) SG [Key] 지정. security_group_ids or security_group_name 필수 하나만 지정.
     block_device_mappings   : [                                   # (Required) EBS
       { name : "root"   ,snapshot_id : "" ,device_name : "/dev/sda1"    ,volume_size : 30   },
@@ -205,9 +205,10 @@ load_balancer_list = [
   {
     name                    : "nlb-svc-2",        # (Required) [key]
     load_balancer_type      : "network",          # (Required) network or application 지정.
+    internal                : false,              # (Required) internal or Internet-facing
     security_group_ids      : [],                 # SG ID 명시적 지정. security_group_ids or security_group_name
     security_group_name     : [],                 # SG [Key] 지정. security_group_ids or security_group_name
-    subnet_ids              : ["subnet-0815f3ae9dfdcaa41","subnet-08def832c4444acc2"],                 # (Required) Subnet ID 명시적 지정. subnet_ids or subnet_name
+    subnet_ids              : ["subnet-0ceaf15f5e05ff4a2","subnet-06030125e59b05b4a"],                 # (Required) Subnet ID 명시적 지정. subnet_ids or subnet_name
     subnet_name             : [],                 # (Required) Subnet [Key] 지정. subnet_ids or subnet_name
     ip_address_type         : "ipv4",             # (Required) "ipv4" or "dualstack"(Subnet IPv6 지원시 가능)
     target_group            : "svc-2-alb",        # (Required) Target Group Key(name) 지정.
@@ -221,9 +222,10 @@ load_balancer_list = [
   {
     name                    : "alb-svc-2",        # (Required) [key]
     load_balancer_type      : "application",      # (Required) network or application 지정.
-    security_group_ids      : ["sg-085a820f94a446f79"],                 # SG ID 명시적 지정. security_group_ids or security_group_name
+    internal                : true,               # (Required) internal or Internet-facing
+    security_group_ids      : ["sg-0e74ef0e274a197d7"],                 # SG ID 명시적 지정. security_group_ids or security_group_name
     security_group_name     : [],                 # SG [Key] 지정. security_group_ids or security_group_name
-    subnet_ids              : ["subnet-09c59d82ce9d0af23","subnet-00326c4bb54cc294c"],                 # (Required) Subnet ID 명시적 지정. subnet_ids or subnet_name
+    subnet_ids              : ["subnet-03a4e9070f0a7b372","subnet-073947f6f975afe8e"],                 # (Required) Subnet ID 명시적 지정. subnet_ids or subnet_name
     subnet_name             : [],                 # (Required) Subnet [Key] 지정. subnet_ids or subnet_name
     ip_address_type         : "ipv4",             # (Required) "ipv4" or "dualstack"(Subnet IPv6 지원시 가능)
     target_group            : "svc-2-ec2",        # (Required) Target Group Key(name) 지정.
@@ -245,7 +247,7 @@ asg_list = [
     desired_capacity        : 2,              # (Required) 인스턴스 개수.
     max_size                : 2,              # (Required) 최대 수 지정. 자동 Scale out 시 필요.
     min_size                : 1,              # (Required) 최소 수 지정. 자동 Scale out 시 필요.
-    subnet_ids              : ["subnet-09c59d82ce9d0af23","subnet-00326c4bb54cc294c"],                 # (Required) Subnet ID 명시적 지정. subnet_ids or subnet_name
+    subnet_ids              : ["subnet-03a4e9070f0a7b372","subnet-073947f6f975afe8e"],                 # (Required) Subnet ID 명시적 지정. subnet_ids or subnet_name
     subnet_name             : "",             # (Required) Subnet [Key] 지정. subnet_ids or subnet_name
     target_group            : "svc-2-ec2",    # (Required) Target Group Key(name) 지정.
     launch_template         : "svc-2",        # (Required) Launch Template Key(name) 지정.

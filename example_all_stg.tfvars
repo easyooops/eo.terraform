@@ -36,7 +36,7 @@ default = {
   module_enable_rds               : false,  # [비용 발생]
   module_enable_elasticache       : false,  # [비용 발생]
   # [EC2]
-  module_enable_instances         : true,   # [비용 발생] Subnets 필수
+  module_enable_instances         : false,   # [비용 발생] Subnets 필수
   module_enable_launch_template   : true,
   module_enable_target_group      : true,   # VPC 필수
   module_enable_load_balancer     : true,   # [비용 발생] Subnets 필수, target_group 필수(nlb 경우)
@@ -547,6 +547,7 @@ load_balancer_list = [
   {
     name                    : "nlb-svc",          # (Required) [key]
     load_balancer_type      : "network",          # (Required) network or application 지정.
+    internal                : false,              # (Required) internal or Internet-facing
     security_group_ids      : [],                 # SG ID 명시적 지정. security_group_ids or security_group_name
     security_group_name     : [],                 # SG [Key] 지정. security_group_ids or security_group_name
     subnet_ids              : [],                 # (Required) Subnet ID 명시적 지정. subnet_ids or subnet_name
@@ -563,6 +564,7 @@ load_balancer_list = [
   {
     name                    : "alb-svc",          # (Required) [key]
     load_balancer_type      : "application",      # (Required) network or application 지정.
+    internal                : true,               # (Required) internal or Internet-facing
     security_group_ids      : [],                 # SG ID 명시적 지정. security_group_ids or security_group_name
     security_group_name     : ["elb-svc"],        # SG [Key] 지정. security_group_ids or security_group_name
     subnet_ids              : [],                 # (Required) Subnet ID 명시적 지정. subnet_ids or subnet_name

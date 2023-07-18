@@ -26,6 +26,7 @@ resource "aws_lb_target_group" "lb_target_group_template" {
     interval            = 300
     timeout             = 5
     matcher             = "200"
+    protocol            = each.value["target_type"] == "alb" && each.value["port"] == "443" ? "HTTPS" : "HTTP"
   }
 }
 
